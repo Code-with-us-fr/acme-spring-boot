@@ -1,0 +1,111 @@
+= ACME Spring Boot Starters
+
+:toc:
+
+`acme-spring-boot` Java library is a collection of custom starters and auto-configurations designed to make it easy for Java developers to build robust, high-quality applications and respects ACME conventions using Spring Boot.
+
+With our library, you can take advantage of our expertise and experience to build applications quickly and easily, without having to spend time configuring and customizing your code.
+Whether you're a seasoned developer or just getting started, our library is designed to help you succeed.
+
+== Getting started
+
+This guide will walk you through the steps required to get started with `acme-spring-boot` Java library.
+By the end of this guide, you'll have a basic Spring Boot application up and running, and you'll be ready to take advantage of our custom starters and auto-configurations.
+
+=== Prerequisites
+
+Before you begin, make sure you have the following installed on your system:
+
+* Java Development Kit (JDK) version 21 or later
+* Maven 3.9+
+
+
+==== Step 1: Create a new Spring Boot project
+
+The first step is to create a new Spring Boot project (https://start.spring.io/).
+Select the `Spring Web` dependencies and generate the project.
+
+==== Step 2: Add `acme-spring-boot` Java Library to your project
+
+Next, you'll need to add `acme-spring-boot` Java Library to your project.
+To do this, replace the following parent to your build file:
+
+[source,xml]
+.pom.xml
+----
+<parent>
+    <groupId>com.acme</groupId>
+    <artifactId>acme-spring-boot-dependencies</artifactId>
+    <version>3.2.0</version>
+    <relativePath/> <!-- lookup parent from repository -->
+</parent>
+----
+
+==== Step 3: Use `acme-spring-boot` Java Library starters and auto-configurations
+
+Once you've added `acme-spring-boot` Java Library to your project, you can start using our custom starters and auto-configurations.
+
+You can use official Spring Boot starters, but some ACME custom starters are available.
+The exhaustive list of starters is available link:acme-starters[here].
+
+Replace the official starter with the ACME starter.
+
+[source,xml]
+.pom.xml
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+----
+
+[source,xml]
+.pom.xml
+----
+<dependency>
+    <groupId>com.acme</groupId>
+    <artifactId>acme-starter-rest-api</artifactId>
+</dependency>
+----
+
+==== Step 4: Run your application
+
+Finally, you're ready to run your application!
+Use your build tool to build and run your application, and then open a web browser and navigate to http://localhost:8080.
+You should see a "There was an unexpected error (type=Not Found, status=404)" message, indicating that your application is up and running.
+It is normal, because no controllers have been defined in this project.
+
+Compared to official starter, some features are available :
+
+* Swagger-UI available at http://localhost:8080/swagger-ui/index.html
+* Prometheus metrics exposed via Actuator at http://localhost:9090/actuator/prometheus display
+* graceful shutdown of web server on Kubernetes environment
+
+
+Congratulations, you've successfully started using `acme-spring-boot` Java Library with Spring Boot!
+You can now start exploring our custom starters and auto-configurations to build even more powerful applications.
+
+
+== Building from source
+
+To build a local version of `spring-boot-starters`, execute the following command :
+
+[source,shell]
+----
+mvn clean install
+----
+
+This command releases a `local-SNAPHOT` version.
+If you want to release another version, execute the following command :
+
+[source,shell]
+----
+mvn -Drevision=my.version-SNAPSHOT clean install
+----
+
+== Check the dependencies
+
+The Maven plugin `dependency-check-maven` is present in this project, and is link to the Maven profile `dependency-check`.
+Per default, the `dependency-check` profile is active if the system property `nvdApiKey` is present.
+
+It is possible to get an API key https://nvd.nist.gov/developers/request-an-api-key[here].

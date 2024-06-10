@@ -1,0 +1,274 @@
+= ACME Starter test
+:toc:
+:icons: font
+
+This starter provides the following features :
+
+* automatic configuration of RestAssured port;
+
+== Getting started
+
+To use this starter, add this dependency to your Maven POM :
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.acme</groupId>
+    <artifactId>acme-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+
+----
+
+== How to
+
+=== Initialize integration tests
+
+You should create a meta-annotation `@IntegrationTest` present in each integration test class.
+This meta-annotation can't be in this library because it depends on project specificity.
+This is an example of a `@IntegrationTest` meta-annotation :
+
+[source,java]
+----
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
+
+import java.lang.annotation.*;
+
+@Target(value = ElementType.TYPE)
+@Retention(value = RetentionPolicy.RUNTIME)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
+@Sql(scripts = "classpath:db/init-db.sql")
+public @interface IntegrationTest {
+}
+----
+
+In this example, the annotation active the `test` profile and execute an SQL script to purge the database before each test.
+
+Then, you can use annotate your test class with this annotation.
+
+[source,java]
+----
+import org.junit.jupiter.api.Test;
+
+@IntegrationTest
+class MyTestIT {
+
+    @Test
+    void myTestCase() {
+        
+    }
+}
+----
+
+By suffixing the integration tests by `IT`, this test will be executed in the `verify` Maven phase.
+So the integration tests will be executed only if all unit tests are successfully executed.
+
+=== Mock external service
+
+If an external service is called during integration tests, use the `WireMock` library to simulate interactions with it.
+
+==== Only one external service to mock
+
+Follow the https://wiremock.org/docs/junit-jupiter/[basic usage described in the official documentation], if only one external service needs to be mocked.
+
+Fix the `httpPort` property to configure `src/test/resources/config/application.yml` correctly.
+
+[source,java]
+----
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import org.junit.jupiter.api.Test;
+
+@IntegrationTest
+@WireMockTest(httpPort = 8081)
+class MyTestIT {
+
+    @Test
+    void myTestCase() {
+        // Stub a specific endpoint for this test case only
+        WireMock.stubFor(get("/my-endpoint").willReturn(ok()));
+    }
+}
+----
+
+Then configure correctly your Spring application context.
+
+[source,yaml]
+./src/test/resources/config/application.yml
+----
+my-external-service:
+  url: http://localhost:8081/
+----
+
+To stub endpoints, there are two ways: 
+
+* use the DSL like in the previous `@Test` case;
+* put JSON mappings files into `/src/test/resources/mappings`.
+
+[TIP]
+====
+JSON schema of the mapping files are available in https://raw.githubusercontent.com/wiremock/wiremock/master/src/main/resources/swagger/schemas/stub-mappings.yaml[the WireMock GitHub project] and can facilitate mapping file writing in your IDE.
+====
+
+==== Multiple external services to mock
+
+Mock many external services are a little more complex.
+But this starter provides some simple implementations.
+
+It is not possible to use the `@WireMockTest` annotation with many external services.
+The only way is to register multiple `WireMockExtension` with the `@RegisterExtension`.
+
+[source,java]
+----
+import com.acme.starter.test.WireMockUtils;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+@IntegrationTest
+class MyTestIT {
+
+    @RegisterExtension
+    static WireMockExtension service1 = WireMockUtils.simpleMockExtension("service1", 8081);
+
+    @RegisterExtension
+    static WireMockExtension service2 = WireMockUtils.simpleMockExtension("service2", 8082);
+
+    @Test
+    void myTestCase() {
+        // Stub a specific endpoint for the service1
+        service1.stubFor(get("/my-endpoint").willReturn(ok()));
+    }
+}
+----
+
+[NOTE]
+====
+The `WireMockUtils.simpleMockExtension` method provides the https://wiremock.org/docs/response-templating/[response templating feature].
+====
+
+Then correctly configure your Spring application context.
+
+[source,yaml]
+./src/test/resources/config/application.yml
+----
+service1:
+  url: http://localhost:8081/
+service2:
+  url: http://localhost:8082/
+----
+
+Global mapping file can be put into `/src/test/resources/mappings` folder.
+An additional folder distinguishes the two external services mapping files by the tenant parameter of `WireMockUtils.simpleMockExtension` method.
+
+* icon:folder[] src
+** icon:folder[] test
+*** icon:folder[] resources
+**** icon:folder[] mappings
+***** icon:folder[] service1
+****** icon:file[] mapping-file-1.json
+****** icon:file[] mapping-file-2.json
+***** icon:folder[] service2
+****** icon:file[] mapping-file-1.json
+
+=== Start real external service
+
+Sometime, it is easier to use the real service than mocking it.
+In this case, it is possible to start Docker containers for external services.
+
+==== Start a Postgres
+
+Add this dependency to have a wrapping class to facilitate the container declaration.
+
+[source,xml]
+.pom.xml
+----
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>postgresql</artifactId>
+    <scope>test</scope>
+</dependency>
+----
+
+And then create an interface containing the container description.
+
+[source,java]
+.MyApplicationContainers.java
+----
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+
+public interface IntegrationTestContainers {
+
+    @Container
+    @ServiceConnection <1>
+    PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:14.7")
+            .withLabel("com.joyrex2001.kubedock.runas-user", "999") // Container must run as non-root on ACME GKE cluster <2>
+            .withLabel("com.joyrex2001.kubedock.request-cpu", "100m") <3>
+            .withLabel("com.joyrex2001.kubedock.request-memory", "128Mi"); <3>
+}
+----
+<1> The `@ServiceConnection` permits to auto-update the configuration of the application to connect to Postgres.
+See more details about this https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#features.testing.testcontainers.service-connections[in the Spring documentation].
+<2> Official `postgres` containers have a non-root user with the user id `999`.
+<3> Optional labels to size requested resources for this container in Kubernetes cluster.
+
+[NOTE]
+====
+Labels starting with `com.joyrex2001.kubedock` are documented https://github.com/joyrex2001/kubedock[in the Kubedock documentation].
+====
+
+And then reference this new interface in your integration test annotation.
+
+[source,java]
+.IntegrationTest.java
+----
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.context.ImportTestcontainers;
+
+import java.lang.annotation.*;
+
+@Target(value = ElementType.TYPE)
+@Retention(value = RetentionPolicy.RUNTIME)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ImportTestcontainers(IntegrationTestContainers.class) <1>
+public @interface IntegrationTest {
+}
+----
+<1> Import the `IntegrationTestContainers` interface with the annotation `@ImportTestcontainers`.
+
+==== Start a custom service
+
+For service unknown by the `@ServiceConnection`, it is possible to explicitly configure its connection.
+
+To facilitate comparison, the same `postgres` container than the previous example is started,
+but without using the `@ServiceConnection` annotation.
+
+[source,java]
+.MyApplicationContainers.java
+----
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+
+public interface IntegrationTestContainers {
+
+    @Container
+    PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:14.7")
+            .withLabel("com.joyrex2001.kubedock.runas-user", "999") // Container must run as non-root on ACME GKE cluster
+            .withLabel("com.joyrex2001.kubedock.request-cpu", "100m")
+            .withLabel("com.joyrex2001.kubedock.request-memory", "128Mi");
+
+    @DynamicPropertySource
+    static void registerProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", postgresqlContainer::getUsername);
+        registry.add("spring.datasource.password", postgresqlContainer::getPassword);
+    }
+}
+----

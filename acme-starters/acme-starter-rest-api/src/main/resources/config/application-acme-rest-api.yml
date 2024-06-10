@@ -1,0 +1,43 @@
+# Expose management resources in a dedicated port, in order to partition functional and technical endpoints.
+management:
+  server:
+    port: 9090
+  # Expose /health/liveness and /health/readiness endpoints for Kubernetes compatibility.
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  # Expose the following management endpoints:
+  #  - prometheus to allow metrics scraping
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+server:
+  compression:
+    enabled: true
+
+spring:
+  mvc:
+    problemdetails:
+      enabled: true
+
+acme:
+  management:
+    prometheus:
+      metrics:
+        export:
+          # Turn this on only if prometheus version >= 2.43 (cf. https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.2.0-Release-Notes/55a926de3e0f1f6a55151d859efeab5819f8172f#broader-exemplar-support-in-micrometer-112).
+          exemplars: false
+
+---
+# Kubernetes specific configuration
+spring:
+  config:
+    activate:
+      on-cloud-platform: kubernetes
+  lifecycle:
+    timeout-per-shutdown-phase: 15s
+server:
+  shutdown: graceful

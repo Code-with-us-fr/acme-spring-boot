@@ -1,0 +1,36 @@
+spring:
+  jpa:
+    properties:
+      "hibernate.default_batch_fetch_size": 16
+      "hibernate.jdbc.batch_size": 16
+      "hibernate.highlight_sql": true
+logging:
+  group:
+    hibernate:
+      - org.hibernate.SQL
+      - org.hibernate.orm.jdbc.bind
+      - org.hibernate.SQL_SLOW
+
+---
+# Configuration for Kubernetes environment
+spring:
+  config:
+    activate:
+      on-cloud-platform: kubernetes
+  jpa:
+    properties:
+      "hibernate.highlight_sql": false
+
+---
+# Configuration for debugging Hibernate
+spring:
+  config:
+    activate:
+      on-profile: debug-hibernate
+  jpa:
+    properties:
+      "hibernate.generate_statistics": true
+      "hibernate.log_slow_query": 250
+logging:
+  level:
+    hibernate: trace

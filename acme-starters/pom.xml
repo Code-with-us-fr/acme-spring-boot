@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.acme</groupId>
+        <artifactId>acme-spring-boot-dependencies</artifactId>
+        <version>${revision}</version>
+        <relativePath>../acme-spring-boot-dependencies/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>acme-starters</artifactId>
+    <packaging>pom</packaging>
+    <description>ACME Spring Boot starters</description>
+
+    <properties>
+        <revision>local-SNAPSHOT</revision>
+    </properties>
+
+    <modules>
+        <module>acme-starter-rest-api</module>
+        <module>acme-starter</module>
+        <module>acme-starter-test</module>
+        <module>acme-starter-postgresql</module>
+        <module>acme-starter-keycloak</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <!-- Attach sources into separate JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- Permit auto-completion of acme starter properties in IDEs -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+</project>

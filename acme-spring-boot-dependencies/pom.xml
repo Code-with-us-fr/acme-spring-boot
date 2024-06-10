@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.acme</groupId>
+        <artifactId>acme-spring-boot</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>acme-spring-boot-dependencies</artifactId>
+    <packaging>pom</packaging>
+    <description>ACME Spring Boot dependencies</description>
+
+    <properties>
+        <revision>local-SNAPSHOT</revision>
+
+        <!-- Dependencies versions overriding Spring Boot BOM -->
+
+        <!-- Dependencies versions outside Spring Boot BOM -->
+        <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
+        <keycloak.version>24.0.4</keycloak.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.acme</groupId>
+                <artifactId>acme-starter</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.acme</groupId>
+                <artifactId>acme-starter-postgresql</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.acme</groupId>
+                <artifactId>acme-starter-rest-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.acme</groupId>
+                <artifactId>acme-starter-test</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-admin-client</artifactId>
+                <version>${keycloak.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc-openapi.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

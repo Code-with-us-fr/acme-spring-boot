@@ -1,0 +1,148 @@
+= ACME Starter Postgresql
+:toc:
+:icons: font
+
+This starter provides these following features :
+
+* add JPA dependency.
+
+== Getting started
+
+To use this starter, add this dependency to your Maven POM :
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.acme</groupId>
+    <artifactId>acme-starter-postgresql</artifactId>
+</dependency>
+----
+
+== How to
+
+=== Query dynamically with JPA Criteria API
+
+This starter generates a JPA Metamodel for each of your JPA entities.
+The JPA Metamodel is available in a class suffixed by `\_` in the same package of your entity (e.g. `User_` for an entity `User`).
+
+If you want to expose a REST endpoint with many optional filters, you can add a utility class to create all needed specifications.
+
+[source,java]
+.UserSpecifications.java
+----
+import org.springframework.data.jpa.domain.Specification;
+
+public class UserSpecifications {
+
+    public static Specification<User> hasFirstName(String firstName) {
+        if (firstName == null) {
+            return null;
+        }
+
+        return ((root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get(User_.firstName), firstName));
+    }
+
+    public static Specification<User> hasLastName(String lastName) {
+        if (lastName == null) {
+            return null;
+        }
+
+        return ((root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get(User_.lastName), lastName));
+    }
+}
+----
+
+[TIP]
+====
+There are many operators other than `equal` like `greaterThan`, `between`, `in`.
+====
+
+Then, you can add a user criteria DTO that produces an aggregation of multiple specifications.
+
+[source,java]
+.UserSearchDto.java
+----
+import org.springframework.data.jpa.domain.Specification;
+
+public class UserSearchDto {
+    private String firstName;
+    private String lastName;
+
+    public Specification<User> toSpecification() {
+        return Specification.where(UserSpecifications.hasFirstName(firstName))
+                .and(UserSpecifications.hasLastName(lastName));
+    }
+}
+----
+
+[IMPORTANT]
+====
+The specification definition uses a fluent design, but it is important to note that if `firstName` or `lastName` is `null`, the query generated omit this part.
+====
+
+In order to make your repository handle specifications, the repository have to implement the `JpaSpecificationExecutor` interface like this.
+
+[source,java]
+.UserRepository.java
+----
+import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {}
+----
+
+Finally, you can use the specification with your repository.
+
+[source,java]
+.SomeClass.java
+----
+import java.util.List;
+
+public class SomeClass {
+
+    private final UserRepository userRepository;
+
+    public List<User> searchUsersByCriteria(UserSearchDto userSearchDto) {
+        return userRepository.findAll(userSearchDto.toSpecification());
+    }
+}
+----
+
+[TIP]
+====
+The `findAll` method can be used with a `Pageable` object.
+====
+
+=== Map JSON column type
+
+Hibernate handle natively JSON fields mapping since version 6.
+
+To indicate that a property is mapped in a JSON column type, add this single annotation :
+
+[source,java]
+----
+    @JdbcTypeCode(SqlTypes.JSON)
+    private MyPojo data;
+
+----
+
+[TIP]
+.ObjectMapper configuration
+====
+To customize the `ObjectMapper` instance used by Hibernate to map JSON field, create a `@Bean` of type `HibernatePropertiesCustomizer`.
+
+[source,java]
+----
+    @Bean
+    public HibernatePropertiesCustomizer jsonFormatMapperCustomizer() {
+        return hibernateProperties ->
+                hibernateProperties.put(
+                        AvailableSettings.JSON_FORMAT_MAPPER,
+                        new ObjectMapper());
+    }
+----
+====

@@ -1,0 +1,1 @@
+truncate api_user;

@@ -1,0 +1,197 @@
+= ACME Starter Keycloak
+:toc:
+
+This starter provides these following features :
+
+* protect REST endpoints ;
+* call protected endpoints ;
+* administrate Keycloak.
+
+== Getting started
+
+To use this starter, add this dependency to your Maven POM :
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.acme</groupId>
+    <artifactId>acme-starter-keycloak</artifactId>
+</dependency>
+
+----
+
+== How to
+
+=== Protect your API
+
+First, configure Keycloak connection in the `application.yml` file.
+
+[source,yaml]
+----
+keycloak:
+  realm: Freight
+  client-id: fret-api
+  auth-server-url: https://dev-brittany-ferries.cloud-iam.com/auth
+----
+
+[NOTE]
+====
+By default, this starter configures Spring Security to retrieve the realm roles.
+It is possible to switch to the resource roles by setting the property value `keycloak.use-resource-role-mappings` to `true`.
+====
+
+Secondly, add a security `@Configuration` class as the following example.
+
+[source,java]
+----
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final KeycloakOAuth2ResourceServerConfigurerCustomizer keycloakOAuth2ResourceServerConfigurerCustomizer;
+
+    @Bean
+    SecurityFilterChain appSecurityFilterChain(HttpSecurity http) {
+        http.authorizeHttpRequests(requests -> requests
+                .requestMatchers("/protected").authenticated()
+                .requestMatchers("/sensible").hasRole("admin")
+                .anyRequest().permitAll());
+
+        http.oauth2ResourceServer(keycloakOAuth2ResourceServerConfigurerCustomizer);
+
+        return http.build();
+    }
+}
+----
+
+[CAUTION]
+====
+Spring framework now deprecates the class `WebSecurityConfigurerAdapter`.
+The recommendation is to use `SecurityFilterChain` components.
+====
+
+=== Propagate Bearer Token to another API
+
+This part describes how to propagate the Bearer Token that your API receive in the HTTP header `Authorization`.
+
+==== With RestTemplate
+
+Create a `RestTemplate` with the additional HTTP interceptor `ServletBearerHttpRequestInterceptor`.
+
+[source,java]
+----
+import com.acme.starters.keycloak.client.spring.ServletBearerHttpRequestInterceptor;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class MyComponent {
+
+    private final RestTemplate restTemplate;
+
+    public MyComponent(RestTemplateBuilder builder) {
+        restTemplate = builder
+            .additionalInterceptors(new ServletBearerHttpRequestInterceptor())
+            .build();
+    }
+}
+----
+
+==== With FeignClient
+
+Configure the `@FeignClient` with the configuration class `ServletBearerConfiguration`.
+
+[source,java]
+----
+import com.acme.starters.keycloak.client.feign.ServletBearerFeignConfiguration;
+import org.springframework.cloud.openfeign.FeignClient;
+
+@FeignClient(url = "https://...", configuration = ServletBearerFeignConfiguration.class)
+public interface MyClient {
+
+}
+----
+
+=== Use client Bearer Token on calling another API
+
+This part describes how to call an API with a Bearer Token that authenticates your client.
+
+The configuration must define more properties to permit the application retrieving JWT from Keycloak.
+
+[source,yaml]
+----
+keycloak:
+  client-secret: my-client-secret
+  grant-type: client_credentials
+----
+
+==== With RestTemplate
+
+Create a `RestTemplate` with the additional HTTP interceptor `ClientBearerHttpRequestInterceptor`.
+
+[source,java]
+----
+import com.acme.starters.keycloak.client.spring.ClientBearerHttpRequestInterceptor;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class MyComponent {
+
+    private final RestTemplate restTemplate;
+
+    public MyComponent(RestTemplateBuilder builder, ClientBearerHttpRequestInterceptor interceptor) {
+        restTemplate = builder
+            .additionalInterceptors(interceptor)
+            .build();
+    }
+}
+----
+
+==== With FeignClient
+
+Configure the `@FeignClient` with the configuration class `ClientBearerConfiguration`.
+
+[source,java]
+----
+import com.acme.starters.keycloak.client.feign.ClientBearerFeignConfiguration;
+import org.springframework.cloud.openfeign.FeignClient;
+
+@FeignClient(url = "https://...", configuration = ClientBearerFeignConfiguration.class)
+public interface MyClient {
+
+}
+----
+
+=== Administrate Keycloak
+
+To administrate Keycloak, the most simple is to inject the `RealmResource` object and interact with it.
+The realm injected is the realm define by the property `keycloak.realm`.
+
+[source,java]
+----
+import org.keycloak.admin.client.resource.RealmResource;
+import org.springframework.stereotype.Component;
+
+@Component
+public class MyComponent {
+    private final RealmResource realmResource;
+
+    public MyComponent(RealmResource realmResource) {
+        this.realmResource = realmResource;
+    }
+
+    public void myMethod() {
+        realmResource.users().delete("user-123");
+    }
+
+}
+----
+
+[NOTE]
+====
+It is important to add sufficient roles to the client to be able to access to Keycloak API.
+====
