@@ -4,6 +4,7 @@
 This starter provides these following features :
 
 * protect REST endpoints ;
+** append user identifier to MDC
 * call protected endpoints ;
 * administrate Keycloak.
 
@@ -29,9 +30,9 @@ First, configure Keycloak connection in the `application.yml` file.
 [source,yaml]
 ----
 keycloak:
-  realm: Freight
-  client-id: fret-api
-  auth-server-url: https://dev-brittany-ferries.cloud-iam.com/auth
+  realm: public
+  client-id: customer-api
+  auth-server-url: https://iam.acme.com/auth
 ----
 
 [NOTE]
@@ -45,7 +46,6 @@ Secondly, add a security `@Configuration` class as the following example.
 [source,java]
 ----
 @Configuration
-@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -56,7 +56,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(requests -> requests
                 .requestMatchers("/protected").authenticated()
                 .requestMatchers("/sensible").hasRole("admin")
-                .anyRequest().permitAll());
+                .anyRequest().denyAll());
 
         http.oauth2ResourceServer(keycloakOAuth2ResourceServerConfigurerCustomizer);
 
@@ -64,6 +64,52 @@ public class SecurityConfig {
     }
 }
 ----
+
+[NOTE]
+.Keycloak roles mapping
+====
+The `acme-starter-keycloak` map realm and client roles form Keycloak token.
+
+For the client `user-api` and the following token:
+[source,json]
+.Keycloak token
+----
+{
+  "exp": 1718796063,
+  "iat": 1718795763,
+  "jti": "5089baa3-3e85-4349-91db-e21fa110622f",
+  "iss": "http://localhost:8000/realms/acme",
+  "sub": "f3a4af23-61c8-47b3-9aa0-96ee86cb4933",
+  "typ": "Bearer",
+  "azp": "user-api",
+  "sid": "10c8f46f-54c4-48a1-9ede-eaff84fd7ab4",
+  "acr": "1",
+  "realm_access": {
+    "roles": [
+      "acme-admin"
+    ]
+  },
+  "resource_access": {
+    "user-api": {
+      "roles": [
+        "writer"
+      ]
+    }
+  },
+  "scope": "openid email profile",
+  "email_verified": true,
+  "name": "Ad Min",
+  "preferred_username": "admin",
+  "given_name": "Ad",
+  "family_name": "Min",
+  "email": "admin@acme.com"
+}
+----
+The library extracts the following roles:
+
+* `realm_acme-admin`
+* `writer`
+====
 
 [CAUTION]
 ====
@@ -174,18 +220,23 @@ The realm injected is the realm define by the property `keycloak.realm`.
 [source,java]
 ----
 import org.keycloak.admin.client.resource.RealmResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MyComponent {
+    private static final Logger log = LoggerFactory.getLogger(MyComponent.class);
     private final RealmResource realmResource;
 
     public MyComponent(RealmResource realmResource) {
         this.realmResource = realmResource;
     }
 
-    public void myMethod() {
-        realmResource.users().delete("user-123");
+    public void myMethod(String userId) {
+        try(Response response = realmResource.users().delete(userId)) {
+            log.info("User {} is deleted", userId);
+        }
     }
 
 }

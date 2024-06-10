@@ -260,7 +260,7 @@ public interface IntegrationTestContainers {
 
     @Container
     PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:14.7")
-            .withLabel("com.joyrex2001.kubedock.runas-user", "999") // Container must run as non-root on ACME GKE cluster
+            .withLabel("com.joyrex2001.kubedock.runas-user", "999") // Container must run as non-root on ACME K8S cluster
             .withLabel("com.joyrex2001.kubedock.request-cpu", "100m")
             .withLabel("com.joyrex2001.kubedock.request-memory", "128Mi");
 

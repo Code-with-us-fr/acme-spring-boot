@@ -1,9 +1,7 @@
 package com.acme.api.user.interfaces;
 
 import com.acme.api.user.domain.UserRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,5 +20,10 @@ public class UserController {
         return userRepository.findAll().stream()
                 .map(UserRepresentation::fromDomain)
                 .toList();
+    }
+
+    @PostMapping
+    public void createUser(@RequestBody UserRepresentation newUser) {
+        userRepository.save(newUser.toDomain());
     }
 }

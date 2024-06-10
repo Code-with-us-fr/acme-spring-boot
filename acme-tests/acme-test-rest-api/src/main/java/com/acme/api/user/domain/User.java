@@ -1,6 +1,9 @@
 package com.acme.api.user.domain;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+
+import static org.hibernate.type.SqlTypes.JSON;
 
 @Entity
 @Table(name = "api_user")
@@ -13,6 +16,8 @@ public class User {
     private String firstName;
     private String lastName;
     private String email;
+    @JdbcTypeCode(JSON)
+    private Address address;
 
     public Long getId() {
         return id;
@@ -47,6 +52,15 @@ public class User {
 
     public User setEmail(String email) {
         this.email = email;
+        return this;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public User setAddress(Address address) {
+        this.address = address;
         return this;
     }
 }

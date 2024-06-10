@@ -3,4 +3,6 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+          issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm:acme}
+keycloak:
+  client-id: ${spring.application.name:todefine}

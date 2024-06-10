@@ -20,7 +20,7 @@
 
         <!-- Dependencies versions outside Spring Boot BOM -->
         <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
-        <keycloak.version>24.0.4</keycloak.version>
+        <keycloak.version>25.0.0</keycloak.version>
     </properties>
 
     <dependencyManagement>
@@ -28,6 +28,11 @@
             <dependency>
                 <groupId>com.acme</groupId>
                 <artifactId>acme-starter</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.acme</groupId>
+                <artifactId>acme-starter-keycloak</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

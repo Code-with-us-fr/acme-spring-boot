@@ -1,0 +1,76 @@
+{
+  "realm": "acme",
+  "enabled": true,
+  "roles": {
+    "client": {
+      "user-api": [
+        {
+          "name": "writer",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "00b12523-4862-42d2-9760-06789e5b89a4",
+          "attributes": {}
+        }
+      ]
+    }
+  },
+  "users": [
+    {
+      "id": "23d97bb4-5280-4c8c-a9bf-00e34bfc3f87",
+      "username": "service-account-user-api",
+      "emailVerified": false,
+      "enabled": true,
+      "serviceAccountClientId": "user-api"
+    },
+    {
+      "username": "admin",
+      "email": "admin@acme.com",
+      "emailVerified": true,
+      "firstName": "Ad",
+      "lastName": "Min",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "secret"
+        }
+      ],
+      "clientRoles": {
+        "user-api": [
+          "writer"
+        ]
+      }
+    },
+    {
+      "username": "simple-user",
+      "email": "simple-user@acme.com",
+      "emailVerified": true,
+      "firstName": "Simple",
+      "lastName": "User",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "secret"
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "id": "00b12523-4862-42d2-9760-06789e5b89a4",
+      "clientId": "user-api",
+      "name": "User API",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "secret",
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    }
+  ],
+  "keycloakVersion": "25.0.0"
+}

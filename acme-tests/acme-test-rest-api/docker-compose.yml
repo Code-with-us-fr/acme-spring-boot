@@ -1,8 +1,21 @@
 ---
 services:
   postgresql:
-    image: postgres:15
+    image: postgres:16
     environment:
       POSTGRES_PASSWORD: password
     ports:
       - 5432:5432
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_IMPORT: /opt/jboss/keycloak/imports/acme-realm.json
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - 8000:8080
+    volumes:
+      - ./acme-realm.json:/opt/keycloak/data/import/acme-realm.json

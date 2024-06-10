@@ -1,0 +1,17 @@
+###
+GET http://localhost:8080/users
+Authorization: Bearer {{$auth.token("user")}}
+Accept: application/json
+
+###
+POST http://localhost:8080/users
+Authorization: Bearer {{$auth.token("user")}}
+Content-Type: application/json
+
+{
+  "firstName": "Bip",
+  "lastName": "Bip",
+  "email": "bip.bip@acme.com",
+  "postalCode": "24569",
+  "city": "Houston"
+}

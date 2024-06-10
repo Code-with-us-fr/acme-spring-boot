@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Convert a Keycloak {@link Jwt} to a {@link Collection} of {@link GrantedAuthority}.
@@ -17,7 +18,8 @@ import java.util.stream.Collectors;
  */
 public class KeycloakJwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
-    private static final String AUTHORITY_PREFIX = "ROLE_";
+    private static final String RESOURCE_AUTHORITY_PREFIX = "ROLE_";
+    private static final String REALM_AUTHORITY_PREFIX = "ROLE_realm_";
     public static final String RESOURCE_ACCESS_CLAIM = "resource_access";
     public static final String REALM_ACCESS_CLAIM = "realm_access";
     public static final String ROLES_SUB_CLAIM = "roles";
@@ -30,27 +32,35 @@ public class KeycloakJwtGrantedAuthoritiesConverter implements Converter<Jwt, Co
 
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
-
-        if (keycloakProperties.isUseResourceRoleMappings()) {
-            String clientId = keycloakProperties.getClientId();
-            if (jwt.hasClaim(RESOURCE_ACCESS_CLAIM) && jwt.getClaim(RESOURCE_ACCESS_CLAIM) instanceof Map<?, ?> resourceAccess
-                && resourceAccess.containsKey(clientId) && resourceAccess.get(clientId) instanceof Map<?, ?> resourceAccessClient
-                && resourceAccessClient.containsKey(ROLES_SUB_CLAIM) && resourceAccessClient.get(ROLES_SUB_CLAIM) instanceof List<?> resourceAccessClientRoles) {
-                return convertToGrantedAuthorities(resourceAccessClientRoles);
-            }
-        } else {
-            if (jwt.hasClaim(REALM_ACCESS_CLAIM) && jwt.getClaim(REALM_ACCESS_CLAIM) instanceof Map<?,?> realmAccess
-                && realmAccess.containsKey(ROLES_SUB_CLAIM) && realmAccess.get(ROLES_SUB_CLAIM) instanceof List<?> realmAccessRoles) {
-                return convertToGrantedAuthorities(realmAccessRoles);
-            }
-        }
-
-        return List.of();
+        return Stream.concat(
+                convertResourceRoleMappings(jwt).stream(),
+                convertRealmRoleMappings(jwt).stream()
+        ).toList();
     }
 
-    private List<GrantedAuthority> convertToGrantedAuthorities(List<?> realmAccessRoles) {
+    private List<GrantedAuthority> convertResourceRoleMappings(Jwt jwt) {
+        String clientId = keycloakProperties.getClientId();
+        if (jwt.hasClaim(RESOURCE_ACCESS_CLAIM) && jwt.getClaim(RESOURCE_ACCESS_CLAIM) instanceof Map<?, ?> resourceAccess
+                && resourceAccess.containsKey(clientId) && resourceAccess.get(clientId) instanceof Map<?, ?> resourceAccessClient
+                && resourceAccessClient.containsKey(ROLES_SUB_CLAIM) && resourceAccessClient.get(ROLES_SUB_CLAIM) instanceof List<?> resourceAccessClientRoles) {
+            return convertToGrantedAuthorities(resourceAccessClientRoles, RESOURCE_AUTHORITY_PREFIX);
+        } else {
+            return List.of();
+        }
+    }
+
+    private List<GrantedAuthority> convertRealmRoleMappings(Jwt jwt) {
+        if (jwt.hasClaim(REALM_ACCESS_CLAIM) && jwt.getClaim(REALM_ACCESS_CLAIM) instanceof Map<?,?> realmAccess
+                && realmAccess.containsKey(ROLES_SUB_CLAIM) && realmAccess.get(ROLES_SUB_CLAIM) instanceof List<?> realmAccessRoles) {
+            return convertToGrantedAuthorities(realmAccessRoles, REALM_AUTHORITY_PREFIX);
+        } else {
+            return List.of();
+        }
+    }
+
+    private List<GrantedAuthority> convertToGrantedAuthorities(List<?> realmAccessRoles, String authorityPrefix) {
         return realmAccessRoles.stream()
-                .map(role -> new SimpleGrantedAuthority(AUTHORITY_PREFIX + role.toString()))
+                .map(role -> new SimpleGrantedAuthority(authorityPrefix + role.toString()))
                 .collect(Collectors.toList());
     }
 }

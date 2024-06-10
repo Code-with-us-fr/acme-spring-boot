@@ -1,5 +1,4 @@
 = ACME Spring Boot Starters
-
 :toc:
 
 `acme-spring-boot` Java library is a collection of custom starters and auto-configurations designed to make it easy for Java developers to build robust, high-quality applications and respects ACME conventions using Spring Boot.
@@ -102,6 +101,27 @@ If you want to release another version, execute the following command :
 ----
 mvn -Drevision=my.version-SNAPSHOT clean install
 ----
+
+[NOTE]
+.Maven CI Friendly Versions
+====
+Defining the `revision` in the command line is called https://maven.apache.org/maven-ci-friendly.html[Maven CI Friendly Versions].
+It is useful to avoid the "classical" Maven release commits.
+
+Combined with a well-named branches convention (e.g. `[0-9]\+.[0-9]+`), the CI script to build the library snapshot can be as simple as the following command:
+
+[source,bash]
+----
+mvn -Drevision=${BRANCH}-SNAPSHOT deploy
+----
+
+And a release, by a tag, can be as simple as the following command:
+
+[source,bash]
+----
+mvn -Drevision=${TAG} deploy
+----
+====
 
 == Check the dependencies
 

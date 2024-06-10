@@ -23,14 +23,6 @@ spring:
     problemdetails:
       enabled: true
 
-acme:
-  management:
-    prometheus:
-      metrics:
-        export:
-          # Turn this on only if prometheus version >= 2.43 (cf. https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.2.0-Release-Notes/55a926de3e0f1f6a55151d859efeab5819f8172f#broader-exemplar-support-in-micrometer-112).
-          exemplars: false
-
 ---
 # Kubernetes specific configuration
 spring:

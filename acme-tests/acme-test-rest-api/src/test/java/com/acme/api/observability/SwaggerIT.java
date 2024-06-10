@@ -1,4 +1,4 @@
-package com.acme.api.infrastructure;
+package com.acme.api.observability;
 
 import com.acme.api.IntegrationTest;
 import io.restassured.RestAssured;

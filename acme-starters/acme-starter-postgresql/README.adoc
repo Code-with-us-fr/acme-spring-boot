@@ -129,20 +129,3 @@ To indicate that a property is mapped in a JSON column type, add this single ann
     private MyPojo data;
 
 ----
-
-[TIP]
-.ObjectMapper configuration
-====
-To customize the `ObjectMapper` instance used by Hibernate to map JSON field, create a `@Bean` of type `HibernatePropertiesCustomizer`.
-
-[source,java]
-----
-    @Bean
-    public HibernatePropertiesCustomizer jsonFormatMapperCustomizer() {
-        return hibernateProperties ->
-                hibernateProperties.put(
-                        AvailableSettings.JSON_FORMAT_MAPPER,
-                        new ObjectMapper());
-    }
-----
-====

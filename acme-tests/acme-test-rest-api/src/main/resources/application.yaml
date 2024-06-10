@@ -1,6 +1,11 @@
 ---
 spring:
+  application:
+    name: user-api
   datasource:
     url: jdbc:postgresql://localhost:5432/
     username: postgres
     password: password
+
+keycloak:
+  auth-server-url: http://localhost:8000

@@ -1,22 +1,30 @@
 package com.acme.starters.keycloak;
 
-import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("keycloak")
 public class KeycloakProperties {
 
-    private String authServerUrl;
-    @NotNull
-    private String realm;
-    private String clientId;
-    private String clientSecret;
-    private String grantType;
-
     /**
-     * Extract roles from realm_access claim if false, and resource_access claim if true.
+     * The URL of the Keycloak authentication server. (e.g. https://iam.acme.com)
      */
-    private boolean useResourceRoleMappings;
+    private String authServerUrl;
+    /**
+     * The Keycloak realm.
+     */
+    private String realm = "acme";
+    /**
+     * The application client identifier.
+     */
+    private String clientId;
+    /**
+     * The application client secret.
+     */
+    private String clientSecret;
+    /**
+     * The client grant type (e.g. client_credential).
+     */
+    private String grantType;
 
     public String getAuthServerUrl() {
         return authServerUrl;
@@ -56,13 +64,5 @@ public class KeycloakProperties {
 
     public void setGrantType(String grantType) {
         this.grantType = grantType;
-    }
-
-    public boolean isUseResourceRoleMappings() {
-        return useResourceRoleMappings;
-    }
-
-    public void setUseResourceRoleMappings(boolean useResourceRoleMappings) {
-        this.useResourceRoleMappings = useResourceRoleMappings;
     }
 }

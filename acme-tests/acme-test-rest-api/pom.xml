@@ -18,6 +18,10 @@
     <dependencies>
         <dependency>
             <groupId>com.acme</groupId>
+            <artifactId>acme-starter-keycloak</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.acme</groupId>
             <artifactId>acme-starter-postgresql</artifactId>
         </dependency>
         <dependency>
