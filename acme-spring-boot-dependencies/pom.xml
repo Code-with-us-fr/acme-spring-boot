@@ -19,7 +19,7 @@
         <!-- Dependencies versions overriding Spring Boot BOM -->
 
         <!-- Dependencies versions outside Spring Boot BOM -->
-        <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
+        <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
         <keycloak.version>25.0.0</keycloak.version>
     </properties>
 
