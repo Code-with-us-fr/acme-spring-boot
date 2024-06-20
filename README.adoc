@@ -34,8 +34,8 @@ To do this, replace the following parent to your build file:
 ----
 <parent>
     <groupId>com.acme</groupId>
-    <artifactId>acme-spring-boot-dependencies</artifactId>
-    <version>3.2.0</version>
+    <artifactId>acme-spring-boot-parent</artifactId>
+    <version>3.3.0</version>
     <relativePath/> <!-- lookup parent from repository -->
 </parent>
 ----
@@ -72,7 +72,7 @@ Replace the official starter with the ACME starter.
 Finally, you're ready to run your application!
 Use your build tool to build and run your application, and then open a web browser and navigate to http://localhost:8080.
 You should see a "There was an unexpected error (type=Not Found, status=404)" message, indicating that your application is up and running.
-It is normal, because no controllers have been defined in this project.
+It is normal because no controllers have been defined in this project.
 
 Compared to official starter, some features are available :
 
@@ -84,6 +84,44 @@ Compared to official starter, some features are available :
 Congratulations, you've successfully started using `acme-spring-boot` Java Library with Spring Boot!
 You can now start exploring our custom starters and auto-configurations to build even more powerful applications.
 
+== Git flow
+
+There is no `main` branch in this project.
+To simplify the versioning, a new branch is created for each version (e.g. `3.3`).
+
+[plantuml,format="png"]
+----
+@startdot
+digraph G {
+        rankdir="LR";
+        node[width=0.15, height=0.15, shape=point, color=black];
+        edge[weight=2, arrowhead=none, color=black];
+        node[group=3.2];
+        1 -> 2 -> 3 -> 4 -> 11;
+        3[shape=cds,label="3.2.0"];
+        11[shape=box,label=3.2];
+        node[group=3.3];
+        2 -> 6 -> 7 -> 8 -> 9 -> 10;
+        10[shape=box,label=3.3];
+        6[shape=cds,label="3.3.0"];
+        7[shape=cds,label="3.3.1"];
+}
+@enddot
+----
+
+A version is a branch (e.g. `3.3`) and a release is a tag (e.g. `3.3.1`).
+
+And to help developers, the semantic versioning of the `acme-spring-boot` library is aligned with the major, minor versions of `spring-boot`.
+The `3.3.0` version of `acme-spring-boot` depends on `spring-boot:3.3`.
+
+[NOTE]
+.Spring Boot support
+====
+The Spring Boot team only supports the two last versions.
+The `acme-spring-boot` is aligned with this statement and doesn't support older versions.
+
+image::docs/spring-boot-support.png[]
+====
 
 == Building from source
 
