@@ -1,0 +1,9 @@
+= Conclusion
+:icons: font
+
+* icon:plus[role=green] Expérience développeur simplifiée proche de Spring Boot
+* icon:plus[role=green] Peu de code...
+* icon:minus[role=red] Mais complexe sans une expertise Spring Boot
+* icon:plus[role=green] Participation au projet Spring Boot (bugs)
+* icon:plus[role=green] Bonne intégration avec les exigences opérationnelles (CI, déploiement)
+* icon:plus[role=green] Documentation vivante
