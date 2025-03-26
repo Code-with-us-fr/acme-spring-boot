@@ -17,6 +17,7 @@ management:
 server:
   compression:
     enabled: true
+  shutdown: immediate
 
 spring:
   mvc:

@@ -6,4 +6,6 @@ spring:
   main:
     banner-mode: off
 logging:
-  config: classpath:json-logback.xml
+  structured:
+    format:
+      console: ecs
