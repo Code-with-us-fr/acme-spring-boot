@@ -63,6 +63,10 @@
             <artifactId>postgresql</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

@@ -5,6 +5,7 @@
 This starter provides the following features :
 
 * automatic configuration of RestAssured port;
+* generate diagram of Postgres database.
 
 == Getting started
 
@@ -123,7 +124,7 @@ The only way is to register multiple `WireMockExtension` with the `@RegisterExte
 
 [source,java]
 ----
-import com.acme.starter.test.WireMockUtils;
+import com.acme.starters.test.WireMockUtils;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -206,21 +207,11 @@ public interface IntegrationTestContainers {
 
     @Container
     @ServiceConnection <1>
-    PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:14.7")
-            .withLabel("com.joyrex2001.kubedock.runas-user", "999") // Container must run as non-root on ACME GKE cluster <2>
-            .withLabel("com.joyrex2001.kubedock.request-cpu", "100m") <3>
-            .withLabel("com.joyrex2001.kubedock.request-memory", "128Mi"); <3>
+    PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:14.7");
 }
 ----
 <1> The `@ServiceConnection` permits to auto-update the configuration of the application to connect to Postgres.
 See more details about this https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#features.testing.testcontainers.service-connections[in the Spring documentation].
-<2> Official `postgres` containers have a non-root user with the user id `999`.
-<3> Optional labels to size requested resources for this container in Kubernetes cluster.
-
-[NOTE]
-====
-Labels starting with `com.joyrex2001.kubedock` are documented https://github.com/joyrex2001/kubedock[in the Kubedock documentation].
-====
 
 And then reference this new interface in your integration test annotation.
 
@@ -259,10 +250,7 @@ import org.testcontainers.junit.jupiter.Container;
 public interface IntegrationTestContainers {
 
     @Container
-    PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:14.7")
-            .withLabel("com.joyrex2001.kubedock.runas-user", "999") // Container must run as non-root on ACME K8S cluster
-            .withLabel("com.joyrex2001.kubedock.request-cpu", "100m")
-            .withLabel("com.joyrex2001.kubedock.request-memory", "128Mi");
+    PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:14.7");
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
@@ -272,3 +260,15 @@ public interface IntegrationTestContainers {
     }
 }
 ----
+
+=== Auto-generate Postgres database diagram
+
+To generate Postgres database diagram, add the following property:
+
+```yaml
+documentation:
+  database:
+    enabled: true
+```
+
+Run an integration test and view the diagram in `target/generated-docs/database.png` file.
