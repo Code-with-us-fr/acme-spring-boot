@@ -1,4 +1,8 @@
 ---
+
 spring:
   profiles:
     active: debug-hibernate
+documentation:
+  database:
+    enabled: true
