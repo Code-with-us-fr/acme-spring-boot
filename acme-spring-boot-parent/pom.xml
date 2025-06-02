@@ -18,7 +18,7 @@
         <revision>local-SNAPSHOT</revision>
 
         <!-- Plugin versions outside Spring Boot BOM -->
-        <dependency-check-maven.version>9.1.0</dependency-check-maven.version>
+        <dependency-check-maven.version>12.1.1</dependency-check-maven.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <jaxb2-maven-plugin.version>3.2.0</jaxb2-maven-plugin.version>
 
